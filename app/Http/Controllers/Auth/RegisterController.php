@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -40,6 +41,29 @@ class RegisterController extends Controller
         $this->middleware('guest');
     }
 
+    /*
+     * 注册
+     */
+    public function register(Request $request)
+    {
+        try {
+            $this->validator($request->all())->validate();
+            $user = new User([
+                'username' => $request->get('username'),
+                'name' => $request->get('name'),
+                'email' => $request->get('email'),
+                'password' => bcrypt($request->get('password'))
+            ]);
+            $user->save();
+            return $this->setStatusCode(201)->message([
+                'user' => $user,
+                'message' => 'ok',
+            ]);
+        } catch (\Exception $e) {
+            return $this->setStatusCode(406)->failed(['message' => $e->getMessage()]);
+        }
+    }
+
     /**
      * Get a validator for an incoming registration request.
      *
@@ -49,6 +73,7 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
+            'username' => ['required', 'string', 'max:255', 'unique:users'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
