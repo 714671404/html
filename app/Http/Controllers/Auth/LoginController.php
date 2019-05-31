@@ -38,7 +38,7 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+        //$this->middleware('guest')->except('logout');
     }
 
     /*
@@ -64,7 +64,6 @@ class LoginController extends Controller
                 $token->expires_at = Carbon::now()->addDays(1);
 
             $token->save();
-            return $token;
 
             return $this->setStatusCode(201)->message([
                 'access_token' => $tokenResult->accessToken,
@@ -82,7 +81,7 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
-        return 'logout';
+        return [$request->user()->token()->revoke()];
     }
     /*
      * 从新获取token
@@ -96,7 +95,10 @@ class LoginController extends Controller
      */
     public function user(Request $request)
     {
-        return 'user';
+        return $this->setStatusCode(200)->message([
+            'message' => $request->user(),
+            'status' => 200
+        ]);
     }
     public function username()
     {
